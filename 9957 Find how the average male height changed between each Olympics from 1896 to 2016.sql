@@ -11,14 +11,14 @@ WITH RECURSIVE olympics_years AS (
     SELECT year + 4
     FROM olympics_years
     WHERE year < 2016
-),
+), -- use recursive CTE to generate all the years from 1896 to 2016
 avg_height AS (
     SELECT year,
         COALESCE(AVG(height), 172.73) as male_avg_height
     FROM olympics_athletes_events
     WHERE sex = 'M'
     GROUP BY year
-),
+), -- calculate the avg height, coalesce was used to fill any null values
 height_diff AS (
     SELECT olympics_years.year AS year,
         COALESCE(avg_height.male_avg_height, 172.73) AS current_year_height,
