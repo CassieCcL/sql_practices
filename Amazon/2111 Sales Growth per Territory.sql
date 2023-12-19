@@ -43,4 +43,10 @@ territory_sale_quarter AS (
     FROM 
         sale_quarter
 )
-SELECT * FROM territory_sale_quarter
+-- find the increasing percentage
+SELECT 
+    DISTINCT territory_id,
+    (LAG (total_quarter_sales) OVER (PARTITION BY territory_id ORDER BY order_quarter DESC) - total_quarter_sales) * 1.0 / total_quarter_sales * 100 AS sales_growth
+FROM 
+    territory_sale_quarter
+-- Another more staightforward way is to filter Q3 and Q4 sales in 2 CTEs, the join them for percentage calculation.
