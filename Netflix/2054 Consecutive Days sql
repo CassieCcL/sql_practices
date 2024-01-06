@@ -1,0 +1,33 @@
+-- Find all the users who were active for 3 consecutive days or more.
+
+-- find the start of the consecutive days for the users, if the date diffenrence equals to 1, it is the second day of the streak, then it is not the begining.
+WITH begining_consecutive AS (
+    SELECT 
+        user_id,
+        date,
+        CASE WHEN 
+            date - LAG(date) OVER (PARTITION BY user_id ORDER BY date ASC) <> 1 OR date - LAG(date) OVER (PARTITION BY user_id ORDER BY date ASC) IS NULL THEN 1
+        ELSE 0 END AS consecutive_start
+    FROM 
+        sf_events
+    ORDER BY 
+        user_id, date
+),
+session_grp AS (
+    SELECT 
+        user_id,
+        date,
+        SUM (consecutive_start) OVER(PARTITION BY user_id ORDER BY date) AS session
+    FROM 
+        begining_consecutive
+)
+-- count the consecutive active days in each session
+SELECT 
+    user_id,
+    COUNT(*) AS consecutive_days
+FROM 
+    session_grp
+GROUP BY 
+    user_id, session
+HAVING 
+    COUNT(*) >= 3
